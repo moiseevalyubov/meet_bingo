@@ -372,7 +372,7 @@
         <button class="btn btn-primary" id="btn-finish">🏁 Закрыть совещание (акт)</button>
       </div>
       <div class="statusbar">
-        <span class="sb grow">Состояние: Готово. Отметьте прозвучавшие формулировки.</span>
+        <span class="sb grow">Состояние: Готово. Тайно отмечайте фразы собеседника.</span>
         <span class="sb">CAPS</span>
         <span class="sb">NUM</span>
       </div>
@@ -625,9 +625,10 @@ function renderWith() {
 
 /* ---------- STEP 3: BOARD ---------- */
 function startBoard() {
+  // На карте — только фразы СОБЕСЕДНИКА (его роль) + общие «встречные»
+  // фразы, которые он тоже произносит. Свою роль НЕ подмешиваем.
   const pool = [
     ...COMMON,
-    ...ROLES[state.role].phrases,
     ...ROLES[state.withRole].phrases
   ];
   const unique = [...new Set(pool)];
