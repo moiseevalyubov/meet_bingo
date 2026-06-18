@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>АО «ГлобалСинергоКонсалтинг» — Бинго-Протокол Совещаний v2.4 (корп.)</title>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: "Tahoma", "Geneva", Arial, sans-serif;
+    color: #000;
+    /* классический бирюзовый «рабочий стол» */
+    background: #008080;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 14px 10px 30px;
+    font-size: 14px;
+  }
+
+  /* ====== КОНФИДЕНЦИАЛЬНЫЙ ШТАМП ====== */
+  .stamp {
+    position: fixed;
+    top: 70px; right: -42px;
+    transform: rotate(18deg);
+    border: 3px double #b00000;
+    color: #b00000;
+    font-family: "Times New Roman", serif;
+    font-weight: bold;
+    text-transform: uppercase;
+    padding: 4px 50px;
+    font-size: 14px;
+    letter-spacing: 2px;
+    opacity: .55;
+    pointer-events: none;
+    z-index: 5;
+  }
+
+  /* ====== «ОКНО» в стиле старой ОС ====== */
+  .window {
+    width: 100%;
+    max-width: 720px;
+    background: #d4d0c8;
+    border: 2px solid;
+    border-color: #ffffff #404040 #404040 #ffffff;
+    box-shadow: 1px 1px 0 #808080, 3px 3px 8px rgba(0,0,0,.4);
+    margin-bottom: 14px;
+  }
+  .titlebar {
+    background: linear-gradient(90deg, #000080, #1084d0);
+    color: #fff;
+    font-weight: bold;
+    font-size: 13px;
+    padding: 3px 4px 3px 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .titlebar .t-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .titlebar .controls { display: flex; gap: 2px; flex: 0 0 auto; }
+  .titlebar .controls span {
+    width: 18px; height: 16px;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: #d4d0c8; color: #000;
+    border: 1px solid; border-color: #ffffff #404040 #404040 #ffffff;
+    font-size: 10px; font-weight: bold;
+  }
+  .window-body { padding: 14px; }
+
+  /* ====== БЛАНК-ШАПКА ====== */
+  .letterhead {
+    background: #fff;
+    border-bottom: 3px double #000080;
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .letterhead .logo {
+    font-size: 2.4rem;
+    border: 2px solid #000080;
+    padding: 2px 8px;
+    color: #000080;
+    background: #eef;
+  }
+  .letterhead .org {
+    font-family: "Times New Roman", serif;
+    color: #000080;
+    font-weight: bold;
+    font-size: 1.25rem;
+    line-height: 1.1;
+  }
+  .letterhead .slogan {
+    font-family: "Times New Roman", serif;
+    font-style: italic;
+    color: #555;
+    font-size: .82rem;
+    margin-top: 3px;
+  }
+  .docmeta {
+    background: #ffffcc;
+    border: 1px solid #808000;
+    font-family: "Courier New", monospace;
+    font-size: 11px;
+    padding: 4px 8px;
+    margin: 10px 0 0;
+    color: #333;
+  }
+
+  /* ====== ЗАГОЛОВКИ РАЗДЕЛОВ ====== */
+  .section-title {
+    font-family: "Times New Roman", serif;
+    font-weight: bold;
+    font-size: 1.05rem;
+    color: #000080;
+    text-transform: uppercase;
+    border-bottom: 1px solid #808080;
+    padding-bottom: 4px;
+    margin: 0 0 4px;
+  }
+  .section-hint {
+    color: #444;
+    font-size: .85rem;
+    margin: 0 0 14px;
+    font-style: italic;
+  }
+
+  /* ====== ВАРИАНТЫ (как пункты бланка) ====== */
+  .options { display: flex; flex-direction: column; gap: 8px; }
+  .opt {
+    border: 2px solid;
+    border-color: #ffffff #808080 #808080 #ffffff;
+    background: #ece9d8;
+    padding: 10px 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-align: left;
+    font: inherit;
+    color: inherit;
+    width: 100%;
+  }
+  .opt:hover { background: #fffbe6; }
+  .opt:active { border-color: #808080 #ffffff #ffffff #808080; }
+  .opt .marker { font-family: "Courier New", monospace; font-weight: bold; color: #000080; }
+  .opt .emoji { font-size: 1.6rem; line-height: 1; }
+  .opt .label { font-weight: bold; }
+  .opt .desc { font-size: .8rem; color: #555; margin-top: 1px; }
+
+  /* ====== КНОПКИ (3D bevel) ====== */
+  .back {
+    background: #d4d0c8; cursor: pointer; font: inherit; font-size: 12px;
+    border: 2px solid; border-color: #ffffff #808080 #808080 #ffffff;
+    padding: 4px 10px; margin-bottom: 12px;
+  }
+  .back:active { border-color: #808080 #ffffff #ffffff #808080; }
+
+  .actions { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+  .btn {
+    flex: 1; min-width: 150px;
+    background: #d4d0c8; color: #000; cursor: pointer;
+    font: inherit; font-weight: bold; font-size: 14px;
+    border: 2px solid; border-color: #ffffff #808080 #808080 #ffffff;
+    padding: 12px;
+  }
+  .btn:active { border-color: #808080 #ffffff #ffffff #808080; }
+  .btn-primary { background: #c3d9f0; }
+
+  /* ====== ШАПКА ИГРОВОГО БЛАНКА ====== */
+  .board-head {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 12px;
+    border: 1px solid #808080; background: #ece9d8; padding: 8px;
+  }
+  .chip {
+    background: #fff; border: 1px solid #808080;
+    padding: 4px 8px; font-size: .82rem; font-weight: bold; color: #000080;
+  }
+  .counter {
+    margin-left: auto; font-weight: bold; font-size: .95rem;
+    font-family: "Courier New", monospace; background:#000080; color:#fff; padding:4px 10px;
+  }
+
+  /* ====== ТАБЛИЦА-БИНГО 4x4 ====== */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 5px;
+    background: #808080;
+    border: 2px solid;
+    border-color: #808080 #ffffff #ffffff #808080;
+    padding: 5px;
+  }
+  .cell {
+    position: relative;
+    aspect-ratio: 1 / 1;
+    border: 2px solid;
+    border-color: #ffffff #808080 #808080 #ffffff;
+    background: #fff;
+    padding: 6px;
+    cursor: pointer;
+    font-size: .9rem;        /* крупнее, чем было */
+    line-height: 1.15;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: #000;
+    overflow: hidden;
+    word-break: break-word;
+    hyphens: auto;
+    font-family: "Tahoma", Arial, sans-serif;
+  }
+  @media (max-width: 540px) { .cell { font-size: .72rem; padding: 4px; } .grid { gap: 4px; } }
+  .cell:active { border-color: #808080 #ffffff #ffffff #808080; }
+  .cell.done {
+    background: #c00000;
+    color: #fff;
+    font-weight: bold;
+    border-color: #800000 #ff8080 #ff8080 #800000;
+  }
+  .cell.done::after {
+    content: "✗";
+    position: absolute;
+    top: 2px; right: 4px;
+    font-size: .8rem;
+    opacity: .95;
+  }
+
+  /* ====== СТРОКА СОСТОЯНИЯ ====== */
+  .statusbar {
+    display: flex; gap: 8px; margin-top: 12px;
+  }
+  .statusbar .sb {
+    border: 1px solid; border-color: #808080 #ffffff #ffffff #808080;
+    background: #d4d0c8; padding: 3px 8px; font-size: 11px; color: #333;
+  }
+  .statusbar .sb.grow { flex: 1; }
+
+  /* ====== ФУТЕР-ДИСКЛЕЙМЕР ====== */
+  .disclaimer {
+    max-width: 720px; width: 100%;
+    color: #cffafa; font-size: 10px; line-height: 1.4;
+    font-family: "Times New Roman", serif;
+    text-align: justify;
+    margin-top: 6px;
+  }
+
+  /* ====== OVERLAY / ОТЧЁТ ====== */
+  .overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,.55);
+    display: none;
+    align-items: center; justify-content: center;
+    padding: 16px; z-index: 50;
+  }
+  .overlay.show { display: flex; }
+  .report {
+    background: #d4d0c8;
+    border: 2px solid; border-color: #ffffff #404040 #404040 #ffffff;
+    box-shadow: 3px 3px 10px rgba(0,0,0,.5);
+    max-width: 440px; width: 100%;
+  }
+  .report .titlebar { font-size: 12px; }
+  .report-body { padding: 14px; }
+  .report .official {
+    font-family: "Times New Roman", serif; font-size: .78rem; color: #000080;
+    text-align: center; text-transform: uppercase; letter-spacing: .5px;
+    border-bottom: 1px solid #808080; padding-bottom: 6px; margin-bottom: 12px;
+  }
+
+  /* Мем-карточка */
+  .meme {
+    position: relative;
+    border: 2px solid; border-color: #808080 #ffffff #ffffff #808080;
+    overflow: hidden;
+    aspect-ratio: 4 / 3;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 12px;
+    background: linear-gradient(160deg, #ffd166, #ff6b6b);
+  }
+  .meme .scene { font-size: 4.4rem; line-height: 1; filter: drop-shadow(0 4px 8px rgba(0,0,0,.25)); letter-spacing: -6px; }
+  .meme .top, .meme .bottom {
+    position: absolute; left: 0; right: 0; padding: 0 10px;
+    font-family: "Impact", "Arial Black", sans-serif; font-weight: 900;
+    text-transform: uppercase; color: #fff; line-height: 1.04;
+    font-size: 1.15rem; letter-spacing: .5px;
+    text-shadow: -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 2px 2px 0 #000,
+       0 2px 0 #000, 0 -2px 0 #000, 2px 0 0 #000, -2px 0 0 #000;
+  }
+  .meme .top { top: 10px; }
+  .meme .bottom { bottom: 10px; }
+
+  .report h2 { margin: 4px 0; font-size: 1.2rem; font-family: "Times New Roman", serif; color: #000080; text-align: center; }
+  .report .sass { color: #333; margin: 6px 0 12px; font-size: .92rem; font-style: italic; text-align: center; }
+  .report .verdict {
+    font-family: "Courier New", monospace; font-size: .85rem;
+    background: #ffffcc; border: 1px solid #808000; padding: 6px 8px; margin: 0 0 14px;
+    text-align: center;
+  }
+  .report .verdict b { color: #b00000; }
+
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+  <div class="stamp">Конфиденциально</div>
+
+  <!-- ЕДИНАЯ ШАПКА-БЛАНК -->
+  <div class="window">
+    <div class="titlebar">
+      <span class="t-text">🏛️ Корпоративная Информационная Система — Модуль «БИНГО-ПРОТОКОЛ»</span>
+      <span class="controls"><span>_</span><span>□</span><span>✕</span></span>
+    </div>
+    <div class="letterhead">
+      <div class="logo">🌐</div>
+      <div>
+        <div class="org">АО «ГлобалСинергоКонсалтинг»</div>
+        <div class="slogan">«Комплексные синергетические решения для вертикальной интеграции с 1998 года»</div>
+      </div>
+    </div>
+    <div class="window-body" style="padding:10px 14px;">
+      <div class="docmeta">ДОК. №&nbsp;БНГ-2024/Р3&nbsp;&nbsp;|&nbsp;&nbsp;РЕДАКЦИЯ&nbsp;2.4&nbsp;&nbsp;|&nbsp;&nbsp;ГРИФ:&nbsp;ДСП&nbsp;&nbsp;|&nbsp;&nbsp;ЛИСТ&nbsp;1&nbsp;ИЗ&nbsp;1</div>
+    </div>
+  </div>
+
+  <!-- РАЗДЕЛ 1: РОЛЬ -->
+  <div class="window" id="screen-role">
+    <div class="titlebar">
+      <span class="t-text">Раздел 1. Идентификация участника</span>
+      <span class="controls"><span>_</span><span>□</span><span>✕</span></span>
+    </div>
+    <div class="window-body">
+      <p class="section-title">Раздел 1. Кто Вы на данном совещании?</p>
+      <p class="section-hint">Укажите Вашу должностную категорию согласно штатному расписанию.</p>
+      <div class="options" id="role-options"></div>
+    </div>
+  </div>
+
+  <!-- РАЗДЕЛ 2: С КЕМ -->
+  <div class="window hidden" id="screen-with">
+    <div class="titlebar">
+      <span class="t-text">Раздел 2. Идентификация контрагента</span>
+      <span class="controls"><span>_</span><span>□</span><span>✕</span></span>
+    </div>
+    <div class="window-body">
+      <button class="back" id="back-to-role">◄ Вернуться к Разделу 1</button>
+      <p class="section-title">Раздел 2. С кем проводится совещание?</p>
+      <p class="section-hint">Выберите категорию участника со стороны контрагента. Прилагаются типовые формулировки.</p>
+      <div class="options" id="with-options"></div>
+    </div>
+  </div>
+
+  <!-- РАЗДЕЛ 3: БЛАНК БИНГО -->
+  <div class="window hidden" id="screen-board">
+    <div class="titlebar">
+      <span class="t-text">Раздел 3. Контрольный лист совещания (форма 4×4)</span>
+      <span class="controls"><span>_</span><span>□</span><span>✕</span></span>
+    </div>
+    <div class="window-body">
+      <div class="board-head">
+        <span class="chip" id="chip-role"></span>
+        <span class="chip" id="chip-with"></span>
+        <span class="counter">ОТМЕЧЕНО: <span id="count">0</span>/16</span>
+      </div>
+      <div class="grid" id="grid"></div>
+      <div class="actions">
+        <button class="btn" id="btn-new">🔀 Сформировать новый бланк</button>
+        <button class="btn btn-primary" id="btn-finish">🏁 Закрыть совещание (акт)</button>
+      </div>
+      <div class="statusbar">
+        <span class="sb grow">Состояние: Готово. Отметьте прозвучавшие формулировки.</span>
+        <span class="sb">CAPS</span>
+        <span class="sb">NUM</span>
+      </div>
+    </div>
+  </div>
+
+  <p class="disclaimer">
+    НАСТОЯЩИЙ ДОКУМЕНТ ЯВЛЯЕТСЯ СОБСТВЕННОСТЬЮ АО «ГЛОБАЛСИНЕРГОКОНСАЛТИНГ» И ПРЕДНАЗНАЧЕН ИСКЛЮЧИТЕЛЬНО ДЛЯ СЛУЖЕБНОГО ПОЛЬЗОВАНИЯ.
+    НЕСАНКЦИОНИРОВАННОЕ КОПИРОВАНИЕ, РАСПРОСТРАНЕНИЕ ЛИБО ИСПОЛЬЗОВАНИЕ В ЛИЧНЫХ РАЗВЛЕКАТЕЛЬНЫХ ЦЕЛЯХ МОЖЕТ ПОВЛЕЧЬ ДИСЦИПЛИНАРНУЮ ОТВЕТСТВЕННОСТЬ.
+    ПРОГРЕСС НЕ СОХРАНЯЕТСЯ. ВСЕ СОВПАДЕНИЯ С РЕАЛЬНЫМИ СОВЕЩАНИЯМИ НЕСЛУЧАЙНЫ. © 1998–2024.
+  </p>
+
+  <!-- ОТЧЁТ -->
+  <div class="overlay" id="overlay">
+    <div class="report">
+      <div class="titlebar">
+        <span class="t-text">Акт оценки эффективности совещания</span>
+        <span class="controls"><span>_</span><span>□</span><span>✕</span></span>
+      </div>
+      <div class="report-body">
+        <div class="official">Приложение №7 к Регламенту проведения совещаний</div>
+        <div class="meme">
+          <div class="top" id="meme-top"></div>
+          <div class="scene" id="meme-scene"></div>
+          <div class="bottom" id="meme-bottom"></div>
+        </div>
+        <h2 id="result-title"></h2>
+        <p class="sass" id="result-sass"></p>
+        <p class="verdict">ИТОГО ПО ПРОТОКОЛУ: поймано клише <b id="result-score"></b> из 16</p>
+        <div class="actions">
+          <button class="btn" id="result-again">🔀 Новое совещание</button>
+          <button class="btn btn-primary" id="result-close">Подшить в архив</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+/* ---------- DATA ---------- */
+
+const COMMON = [
+  "Слышно меня?", "Извините, я был на мьюте", "Кто-то шарит не тот экран",
+  "Камеру включать не буду", "Давайте вынесем в отдельную встречу",
+  "Это можно было решить в переписке", "Запишем в action items",
+  "Можно ссылку в чат?", "Давайте синканёмся отдельно", "Кто ведёт заметки?",
+  "У нас есть ещё пара минут?", "Собака лает на фоне", "Возвращаемся к повестке",
+  "У кого ещё что-то есть?", "Давайте зафиксируем и пойдём дальше",
+  "Простите, повторите, плохо со связью", "Это вне скоупа сегодня",
+  "Давайте не уходить в детали", "Встреча затянулась, закругляемся",
+  "Кто-то опоздал и просит пересказать"
+];
+
+const ROLES = {
+  product: {
+    emoji: "📊", label: "Продакт / аналитик",
+    desc: "метрики, гипотезы, бэклог",
+    phrases: [
+      "А какая тут метрика успеха?", "Давайте проверим гипотезу",
+      "Что говорят данные?", "Это точно нужно пользователю?",
+      "Добавим в бэклог", "Нужно приоритизировать", "А какой тут JTBD?",
+      "Это must have или nice to have?", "Давайте сделаем MVP",
+      "Где здесь ценность для бизнеса?", "Надо провести кастдев",
+      "А мы замеряли конверсию?", "Это влияет на retention?",
+      "Сделаем A/B тест", "Поставим в роадмап на след. квартал"
+    ]
+  },
+  dev: {
+    emoji: "💻", label: "Разработчик",
+    desc: "легаси, техдолг, оценки",
+    phrases: [
+      "У меня локально работает", "Это легаси, лучше не трогать",
+      "Нужен рефакторинг", "Это пара дней... может неделя",
+      "А кто это писал?", "Тут нет тестов", "Давайте заведём тикет",
+      "Это техдолг", "На проде всё иначе", "Надо обновить зависимости",
+      "Это не баг, это фича", "Дайте мне доступы", "Документации нет",
+      "Я не трогал этот код", "Оценка — три стори поинта"
+    ]
+  },
+  business: {
+    emoji: "💼", label: "Бизнес",
+    desc: "сроки, выручка, ROI",
+    phrases: [
+      "Нам нужно это ещё вчера", "А можно побыстрее?",
+      "Сколько это будет стоить?", "Давайте мыслить стратегически",
+      "Это увеличит выручку?", "Клиент уже ждёт",
+      "Синхронизируемся с руководством", "Результат нужен к концу квартала",
+      "А конкуренты уже это сделали", "Давайте подумаем о ROI",
+      "Это приоритет номер один", "Сделаем красиво для презентации",
+      "Нужно закрыть сделку", "Давайте масштабироваться", "Это game changer"
+    ]
+  }
+};
+
+/* ---------- RESULT TIERS (по 16 клеткам) ---------- */
+const TIERS = [
+  {
+    min: 16, bg: "linear-gradient(160deg,#f6d365,#fda085)",
+    scene: "🤡🎪🤡", top: "Ты предсказал каждое слово",
+    bottom: "Пора вести эти встречи самому",
+    title: "🏆 ПОЛНОЕ БИНГО",
+    sass: "16 из 16. Это не совещание было, а пьеса по твоему сценарию. Гомерический корпоративный театр — и ты режиссёр."
+  },
+  {
+    min: 12, bg: "linear-gradient(160deg,#ff512f,#dd2476)",
+    scene: "🐶🔥☕", top: "Всё шло по плану",
+    bottom: "План был — сгореть дотла",
+    title: "💀 Корпоративный апокалипсис",
+    sass: "Кругом пылает дедлайн, а ты сидишь с чашкой и шепчешь «это нормально». Спасибо, что досидел до конца."
+  },
+  {
+    min: 8, bg: "linear-gradient(160deg,#8e9eab,#636e72)",
+    scene: "🗿", top: "Ничего нового",
+    bottom: "Можно было не приходить",
+    title: "😐 Так и знал",
+    sass: "Каменное лицо — единственное, что выжило на этом совещании. Календарь обокрал тебя на час жизни, и ты даже не удивлён."
+  },
+  {
+    min: 4, bg: "linear-gradient(160deg,#43cea2,#185a9d)",
+    scene: "🙃", top: "Бывало и хуже",
+    bottom: "Но осадочек остался",
+    title: "😏 Терпимо",
+    sass: "Пара клише прозвучала, кто-то опять был на мьюте — но ты выжил. Награждаешься правом сделать вид, что работал."
+  },
+  {
+    min: 1, bg: "linear-gradient(160deg,#56ccf2,#2f80ed)",
+    scene: "👀", top: "Почти никто не занудствовал",
+    bottom: "Это точно была ловушка?",
+    title: "🤨 Подозрительно тихо",
+    sass: "Так мало клише, что становится тревожно. Либо повезло, либо самое страшное приберегли на следующий созвон."
+  },
+  {
+    min: 0, bg: "linear-gradient(160deg,#a18cd1,#fbc2eb)",
+    scene: "🦄✨", top: "Ни одного клише",
+    bottom: "Таких встреч не бывает",
+    title: "🦄 Идеальная встреча",
+    sass: "Ноль из 16. Либо это было лучшее совещание в истории компании... либо ты всю дорогу честно проспал. Мы не осуждаем."
+  }
+];
+
+/* ---------- STATE ---------- */
+let state = { role: null, withRole: null, cells: [], done: 0 };
+const CELLS_TOTAL = 16; // карта 4×4
+
+const $ = id => document.getElementById(id);
+
+/* ---------- HELPERS ---------- */
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function buildOption(emoji, label, desc) {
+  const b = document.createElement("button");
+  b.className = "opt";
+  b.innerHTML = `<span class="marker">[ ]</span><span class="emoji">${emoji}</span>
+    <span><span class="label">${label}</span><br><span class="desc">${desc}</span></span>`;
+  return b;
+}
+
+function show(screen) {
+  ["screen-role", "screen-with", "screen-board"].forEach(s =>
+    $(s).classList.toggle("hidden", s !== screen));
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+/* ---------- STEP 1: ROLES ---------- */
+function renderRoles() {
+  const box = $("role-options");
+  box.innerHTML = "";
+  Object.entries(ROLES).forEach(([key, r]) => {
+    const b = buildOption(r.emoji, r.label, r.desc);
+    b.onclick = () => { state.role = key; renderWith(); show("screen-with"); };
+    box.appendChild(b);
+  });
+}
+
+/* ---------- STEP 2: WITH WHOM ---------- */
+function renderWith() {
+  const box = $("with-options");
+  box.innerHTML = "";
+  Object.entries(ROLES).forEach(([key, r]) => {
+    const b = buildOption(r.emoji, r.label, r.desc);
+    b.onclick = () => { state.withRole = key; startBoard(); };
+    box.appendChild(b);
+  });
+}
+
+/* ---------- STEP 3: BOARD ---------- */
+function startBoard() {
+  const pool = [
+    ...COMMON,
+    ...ROLES[state.role].phrases,
+    ...ROLES[state.withRole].phrases
+  ];
+  const unique = [...new Set(pool)];
+  state.cells = shuffle(unique).slice(0, CELLS_TOTAL).map(text => ({ text, done: false }));
+  state.done = 0;
+
+  $("chip-role").textContent = "Я: " + ROLES[state.role].label;
+  $("chip-with").textContent = "Контрагент: " + ROLES[state.withRole].label;
+
+  renderGrid();
+  updateCount();
+  show("screen-board");
+}
+
+function renderGrid() {
+  const grid = $("grid");
+  grid.innerHTML = "";
+  state.cells.forEach((cell, i) => {
+    const c = document.createElement("div");
+    c.className = "cell" + (cell.done ? " done" : "");
+    c.textContent = cell.text;
+    c.onclick = () => toggleCell(i);
+    grid.appendChild(c);
+  });
+}
+
+function toggleCell(i) {
+  const cell = state.cells[i];
+  cell.done = !cell.done;
+  state.done += cell.done ? 1 : -1;
+  renderGrid();
+  updateCount();
+  if (state.done === CELLS_TOTAL) finishMeeting();
+}
+
+function updateCount() {
+  $("count").textContent = state.done;
+}
+
+/* ---------- RESULT ---------- */
+function finishMeeting() {
+  const tier = TIERS.find(t => state.done >= t.min);
+  $("meme-scene").textContent = tier.scene;
+  $("meme-top").textContent = tier.top;
+  $("meme-bottom").textContent = tier.bottom;
+  document.querySelector(".meme").style.background = tier.bg;
+  $("result-title").textContent = tier.title;
+  $("result-sass").textContent = tier.sass;
+  $("result-score").textContent = state.done;
+  $("overlay").classList.add("show");
+}
+
+/* ---------- WIRING ---------- */
+$("back-to-role").onclick = () => show("screen-role");
+$("btn-new").onclick = startBoard;
+$("btn-finish").onclick = finishMeeting;
+$("result-close").onclick = () => $("overlay").classList.remove("show");
+$("result-again").onclick = () => { $("overlay").classList.remove("show"); show("screen-role"); };
+
+renderRoles();
+</script>
+</body>
+</html>
